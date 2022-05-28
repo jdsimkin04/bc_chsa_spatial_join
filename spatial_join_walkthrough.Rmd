@@ -4,10 +4,9 @@ author: "Jonathan Simkin"
 date: '2022-05-28'
 output: 
   html_document:
-      toc: true
-  github_document:
     toc: true
-always_allow_html: true
+    toc_depth: 3
+    toc_float: true
 ---
 
 # Intro
@@ -57,7 +56,7 @@ download.file(url, "chsa_2018.zip")
 unzip("chsa_2018.zip", exdir = paste0(getwd(), "/map"))
 ```
 
-### Visualize
+## Visualize
 
 read the map files using the st_read function
 
@@ -88,7 +87,7 @@ chsa %>%
   str()
 ```
 
-### Explore CHSA_UR_Cl
+## Explore CHSA_UR_Cl
 
 Let's look a bit closer at the CHSA_UR_Cl variable
 
@@ -107,7 +106,7 @@ tm_shape(chsa) +
               palette = "PRGn")
 ```
 
-### Sample point data
+## Sample point data
 
 Here's a sample of point data that we want to assign CHSA rural urban class. I got these randomly from google maps.
 
@@ -141,7 +140,7 @@ tibble(
     st_transform(., crs = 4326)
 ```
 
-### Visualize
+## Visualize
 
 Viz the point data
 
@@ -168,7 +167,7 @@ tm_shape(chsa) +
 
 ```
 
-### Spatial join rural urban class to the point data
+## Spatial join rural urban class to the point data
 
 link cohort sf and chsa map
 
