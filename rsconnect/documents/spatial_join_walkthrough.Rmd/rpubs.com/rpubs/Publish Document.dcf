@@ -1,0 +1,11 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/907820/995adc0a31e346078ce7535782cfc66a
+bundleId: https://api.rpubs.com/api/v1/document/907820/995adc0a31e346078ce7535782cfc66a
+url: http://rpubs.com/jdsimkin04/907820
+when: 1653772972.66059
+lastSyncTime: 1653772972.6606

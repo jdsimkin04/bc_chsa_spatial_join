@@ -11,7 +11,11 @@ output:
 
 # Intro
 
-Welcome! Here, I'll demonstrate a quick way link the British Columbia (BC) Community Health Service Area (CHSA) shapefile, with any given point data (E.g. imagine you have health events by longitude / latidude). We'll do this through a spatial join!
+Welcome! Here, I'll demonstrate a quick way to link the British Columbia (BC) Community Health Service Area (CHSA) shapefile, with any given point data (E.g. imagine you have health events by longitude / latidude). We'll do this through a spatial join!
+
+I have this published on RPubs as well, you can check that out here: https://rpubs.com/jdsimkin04
+
+For RPubs sake, here's the github repo: https://github.com/jdsimkin04/bc_chsa_spatial_join
 
 ## What is the BC CHSA shapefile?
 

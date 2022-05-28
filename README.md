@@ -18,6 +18,10 @@ The CHSA is the smallest health administrative area in BC. It was created to fac
 -   To assign rural-urban status in BC to point data (e.g. health events)
 -   To assign CHSA, LHA, HSDA, or HA in BC
 
+## Want to see this in an HTML preview?
+
+Check out my Rpubs: [https://rpubs.com/jdsimkin04](https://rpubs.com/jdsimkin04/907820)
+
 ## Feedback
 
 If you find yourself using this, I'd love to hear from you. Happy to post any of your info products (publcation, reports) that used this code.
