@@ -1,0 +1,195 @@
+---
+title: "Spatial join with the BC CHSA"
+author: "Jonathan Simkin"
+date: '2022-05-28'
+output: html_document
+---
+
+# Intro
+
+Welcome! Here, I'll demonstrate a quick way link the British Columbia (BC) Community Health Service Area (CHSA) shapefile, with any given point data (E.g. imagine you have health events by longitude / latidude). We'll do this through a spatial join!
+
+## What is the BC CHSA shapefile?
+
+The CHSA is the smallest health administrative area in BC. It was created to facilitate community level health analyses. The shapefile is openly available through the [BC Gov data catalogue](https://catalogue.data.gov.bc.ca/dataset/community-health-service-areas-chsa). It also contains attribute data - contextual information related to that CHSA. These include but are not limited too:
+
+-   Corresponding health administrative areas (LHA, HSDA, HA)
+-   Census population
+-   Area km^2^
+-   Level of urbanization
+
+## Why would we want to link the CHSA to data?
+
+-   To assign rural-urban status in BC to point data (e.g. health events)
+-   To assign CHSA, LHA, HSDA, or HA in BC
+
+# Spatial join rural-urban class to point data
+
+## Download the CHSA map file
+
+We can do this a few ways... you could go to the [BC Gov data catalogue](https://catalogue.data.gov.bc.ca/dataset/community-health-service-areas-chsa) and download the shapefile. Or you could use the download.file and unzip functions shown below.
+
+### Libraries
+
+install these libraries if you don't have them
+
+```{r, results = "hide"}
+library(tidyverse)
+library(sf)
+library(tmap)
+library(tmaptools)
+library(kableExtra)
+library(rmapshaper)
+```
+
+### Download and unzip
+
+Download the file from the website using the download.file and unzip function to unzip into a folder called map
+
+```{r, eval = FALSE}
+url <- "https://catalogue.data.gov.bc.ca/dataset/68f2f577-28a7-46b4-bca9-7e9770f2f357/resource/f89f99b0-ca68-41e2-afc4-63fdc0edb666/download/chsa_2018.zip"
+download.file(url, "chsa_2018.zip")
+unzip("chsa_2018.zip", exdir = paste0(getwd(), "/map"))
+```
+
+### Visualize
+
+read the map files using the st_read function
+
+```{r, results = "hide"}
+chsa <-
+st_read("map") %>% 
+  st_make_valid() %>% 
+  st_transform(., crs = 4326) %>% 
+  simplify_shape(.)
+```
+
+visualize the chsa map
+
+```{r}
+tmap_mode("view")
+tm_shape(chsa) +
+  tm_polygons("HSDA_Name",
+              id = "CHSA_Name",
+              palette = "PRGn",  
+              legend.show = FALSE)
+```
+
+see the data elements of the chsa map, the CHSA_UR_Cl is the rural urban classification
+
+```{r}
+chsa %>% 
+  st_drop_geometry() %>% 
+  str()
+```
+
+### Explore CHSA_UR_Cl
+
+Let's look a bit closer at the CHSA_UR_Cl variable
+
+```{r}
+chsa %>% 
+  st_drop_geometry() %>% 
+  count(CHSA_UR_Cl) %>% 
+  mutate(proportion = round(n/sum(n)*100,1))
+```
+
+```{r}
+tmap_mode("view")
+tm_shape(chsa) +
+  tm_polygons("CHSA_UR_Cl",
+              id = "CHSA_Name",
+              palette = "PRGn")
+```
+
+### Sample point data
+
+Here's a sample of point data that we want to assign CHSA rural urban class. I got these randomly from google maps.
+
+```{r}
+spatial_point_data <-
+tibble(
+  case_id = c(1:10),
+  long = c(-122.79245404269491,
+                -122.50750051771003,
+                -121.47061705091572,
+                -120.78489105416672,
+                -119.46708958311152,
+                -122.12044919737846,
+                -123.9735411710232,
+                -127.48038830551505,
+                -122.66126844286325,
+                -131.11218885196038),
+  lat = c(
+    49.1152475836367,  
+49.117737238190344,
+49.38845365756505, 
+50.09960249743014, 
+49.87203980873458, 
+52.13143107578074, 
+49.130988612031395,
+50.69492877221613, 
+58.80790367189857, 
+57.88986797544227)
+) %>% 
+  st_as_sf(., coords = c("long", "lat"), crs = 4326, agr = "constant") %>% 
+    st_transform(., crs = 4326)
+```
+
+### Visualize
+
+Viz the point data
+
+```{r}
+tmap_mode("view")
+tm_shape(spatial_point_data) +
+  tm_dots(size = 0.1,
+          col = "black")
+
+```
+
+Viz teh point data on the CHSAs
+
+```{r}
+tmap_mode("view")
+tm_shape(chsa) +
+  tm_polygons("HSDA_Name",
+              id = "CHSA_Name",
+              palette = "PRGn",  
+              legend.show = FALSE) +
+    tm_shape(spatial_point_data) +
+  tm_dots(size = 0.2,
+          col = "black") 
+
+```
+
+### Spatial join rural urban class to the point data
+
+link cohort sf and chsa map
+
+```{r}
+int <-
+  st_intersects(spatial_point_data, chsa, prepared = TRUE) #Wherever there are intersection between the two layers (the CHSA Map and the study data), we can link them! and store them in "int"
+
+linked_data <-
+spatial_point_data %>%
+  mutate(
+    CHSA_Name = as.character(chsa$CHSA_Name[as.numeric(as.character(int))]),
+    CHSA_UR_Cl = as.character(chsa$CHSA_UR_Cl[as.numeric(as.character(int))]),
+    LHA_Name = as.character(chsa$LHA_Name[as.numeric(as.character(int))]),
+    HSDA_Name = as.character(chsa$HSDA_Name[as.numeric(as.character(int))]),
+    HA_Name = as.character(chsa$HA_Name[as.numeric(as.character(int))])
+    ) %>%
+  st_drop_geometry() #drop the geometry info from the file so we can analyze the data like a norma lfile
+
+```
+
+# Final linked dataset
+
+... and Voila! See the spatially joined point data with CHSA attributes.
+
+```{r}
+linked_data %>% 
+  kable() %>% 
+  kable_styling()
+```
